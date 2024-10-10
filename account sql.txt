@@ -1,0 +1,22 @@
+mysql> create database bank;
+Query OK, 1 row affected (0.09 sec)
+
+mysql> use bank;
+Database changed
+mysql> create table account(
+    -> accno int primary key,
+    -> name text,
+    -> balance float);
+Query OK, 0 rows affected (0.75 sec)
+
+mysql> desc account;
++---------+---------+------+-----+---------+-------+
+| Field   | Type    | Null | Key | Default | Extra |
++---------+---------+------+-----+---------+-------+
+| accno   | int(11) | NO   | PRI | NULL    |       |
+| name    | text    | YES  |     | NULL    |       |
+| balance | float   | YES  |     | NULL    |       |
++---------+---------+------+-----+---------+-------+
+3 rows in set (0.03 sec)
+
+mysql>

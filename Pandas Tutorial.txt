@@ -1,0 +1,398 @@
+The pandas we are writing about in this chapter have nothing to do with the cute panda bears. 
+Endearing bears are not what our visitors expect in a Python tutorial. 
+Pandas is the name for a Python module, which is rounding up the capabilities of Numpy, Scipy and Matplotlab. 
+The word pandas is an acronym which is derived from "Python and data analysis" and "panel data".
+
+There is often some confusion about whether Pandas is an alternative to Numpy, SciPy and Matplotlib. 
+The truth is that it is built on top of Numpy. 
+This means that Numpy is required by pandas. 
+Scipy and Matplotlib on the other hand are not required by pandas but they are extremely useful. 
+That's why the Pandas project lists them as "optional dependency".
+
+Pandas is a software library written for the Python programming language. 
+It is used for data manipulation and analysis. 
+It provides special data structures and operations for the manipulation of numerical tables and time series. 
+Pandas is free software released under the three-clause BSD license.
+
+We will start with the following two important data structures of Pandas:
+
+Series and DataFrame
+
+Series:
+A Series is a one-dimensional labelled array-like object. It is capable of holding any data type, e.g. integers, floats, strings, Python objects, and so on. It can be seen as a data structure with two arrays: one functioning as the index, i.e. the labels, and the other one contains the actual data.
+
+We define a simple Series object in the following example by instantiating a Pandas Series object with a list. We will later see that we can use other data objects for example Numpy arrays and dictionaries as well to instantiate a Series object.
+
+import pandas as pd
+S = pd.Series([11, 28, 72, 3, 5, 8])
+S
+OUTPUT:
+0    11
+1    28
+2    72
+3     3
+4     5
+5     8
+dtype: int64
+We haven't defined an index in our example, but we see two columns in our output: The right column contains our data, whereas the left column contains the index. Pandas created a default index starting with 0 going to 5, which is the length of the data minus 1.
+
+We can directly access the index and the values of our Series S:
+
+print(S.index)
+print(S.values)
+OUTPUT:
+RangeIndex(start=0, stop=6, step=1)
+[11 28 72  3  5  8]
+If we compare this to creating an array in numpy, we will find lots of similarities:
+
+import numpy as np
+X = np.array([11, 28, 72, 3, 5, 8])
+print(X)
+print(S.values)
+# both are the same type:
+print(type(S.values), type(X))
+OUTPUT:
+[11 28 72  3  5  8]
+[11 28 72  3  5  8]
+<class 'numpy.ndarray'> <class 'numpy.ndarray'>
+So far our Series have not been very different to ndarrays of Numpy. This changes, as soon as we start defining Series objects with individual indices:
+
+fruits = ['apples', 'oranges', 'cherries', 'pears']
+quantities = [20, 33, 52, 10]
+S = pd.Series(quantities, index=fruits)
+S
+OUTPUT:
+apples      20
+oranges     33
+cherries    52
+pears       10
+dtype: int64
+A big advantage to NumPy arrays is obvious from the previous example: We can use arbitrary indices.
+
+If we add two series with the same indices, we get a new series with the same index and the correponding values will be added:
+
+fruits = ['apples', 'oranges', 'cherries', 'pears']
+
+S = pd.Series([20, 33, 52, 10], index=fruits)
+S2 = pd.Series([17, 13, 31, 32], index=fruits)
+print(S + S2)
+print("sum of S: ", sum(S))
+OUTPUT:
+apples      37
+oranges     46
+cherries    83
+pears       42
+dtype: int64
+sum of S:  115
+The indices do not have to be the same for the Series addition. The index will be the "union" of both indices. If an index doesn't occur in both Series, the value for this Series will be NaN:
+
+fruits = ['peaches', 'oranges', 'cherries', 'pears']
+fruits2 = ['raspberries', 'oranges', 'cherries', 'pears']
+
+S = pd.Series([20, 33, 52, 10], index=fruits)
+S2 = pd.Series([17, 13, 31, 32], index=fruits2)
+print(S + S2)
+OUTPUT:
+cherries       83.0
+oranges        46.0
+peaches         NaN
+pears          42.0
+raspberries     NaN
+dtype: float64
+
+In principle, the indices can be completely different, as in the following example. We have two indices. One is the Turkish translation of the English fruit names:
+
+fruits = ['apples', 'oranges', 'cherries', 'pears']
+
+fruits_tr = ['elma', 'portakal', 'kiraz', 'armut']
+
+S = pd.Series([20, 33, 52, 10], index=fruits)
+S2 = pd.Series([17, 13, 31, 32], index=fruits_tr)
+print(S + S2)
+OUTPUT:
+apples     NaN
+armut      NaN
+cherries   NaN
+elma       NaN
+kiraz      NaN
+oranges    NaN
+pears      NaN
+portakal   NaN
+dtype: float64
+
+Indexing
+It's possible to access single values of a Series.
+
+print(S['apples'])
+
+OUTPUT:
+20
+This looks like accessing the values of dictionaries through keys.
+
+However, Series objects can also be accessed by multiple indexes at the same time. This can be done by packing the indexes into a list. This type of access returns a Pandas Series again:
+
+print(S[['apples', 'oranges', 'cherries']])
+OUTPUT:
+apples      20
+oranges     33
+cherries    52
+dtype: int64
+Similar to Numpy we can use scalar operations or mathematical functions on a series:
+
+import numpy as np
+print((S + 3) * 4)
+print("======================")
+print(np.sin(S))
+OUTPUT:
+apples       92
+oranges     144
+cherries    220
+pears        52
+dtype: int64
+======================
+apples      0.912945
+oranges     0.999912
+cherries    0.986628
+pears      -0.544021
+dtype: float64
+pandas.Series.apply
+Series.apply(func, convert_dtype=True, args=(), **kwds)
+
+The function "func" will be applied to the Series and it returns either a Series or a DataFrame, depending on "func".
+
+Parameter	Meaning
+func	a function, which can be a NumPy function that will be applied to the entire Series or a Python function that will be applied to every single value of the series
+convert_dtype	A boolean value. If it is set to True (default), apply will try to find better dtype for elementwise function results. If False, leave as dtype=object
+args	Positional arguments which will be passed to the function "func" additionally to the values from the series.
+**kwds	Additional keyword arguments will be passed as keywords to the function
+Example:
+
+S.apply(np.log)
+OUTPUT:
+apples      2.995732
+oranges     3.496508
+cherries    3.951244
+pears       2.302585
+dtype: float64
+
+We can also use Python lambda functions. Let's assume, we have the following task. The test the amount of fruit for every kind. If there are less than 50 available, we will augment the stock by 10:
+
+S.apply(lambda x: x if x > 50 else x+10 )
+OUTPUT:
+apples      30
+oranges     43
+cherries    52
+pears       20
+dtype: int64
+
+
+Filtering with a Boolean array
+Similar to numpy arrays, we can filter Pandas Series with a Boolean array:
+
+S[S>30]
+OUTPUT:
+oranges     33
+cherries    52
+dtype: int64
+
+A series can be seen as an ordered Python dictionary with a fixed length.
+
+"apples" in S
+OUTPUT:
+True
+
+Creating Series Objects from Dictionaries
+We can even use a dictionary to create a Series object. The resulting Series contains the dict's keys as the indices and the values as the values.
+
+cities = {"London":    8615246, 
+          "Berlin":    3562166, 
+          "Madrid":    3165235, 
+          "Rome":      2874038, 
+          "Paris":     2273305, 
+          "Vienna":    1805681, 
+          "Bucharest": 1803425, 
+          "Hamburg":   1760433,
+          "Budapest":  1754000,
+          "Warsaw":    1740119,
+          "Barcelona": 1602386,
+          "Munich":    1493900,
+          "Milan":     1350680}
+
+city_series = pd.Series(cities)
+print(city_series)
+OUTPUT:
+London       8615246
+Berlin       3562166
+Madrid       3165235
+Rome         2874038
+Paris        2273305
+Vienna       1805681
+Bucharest    1803425
+Hamburg      1760433
+Budapest     1754000
+Warsaw       1740119
+Barcelona    1602386
+Munich       1493900
+Milan        1350680
+dtype: int64
+Live Python training
+
+
+
+NaN - Missing Data
+Missing data
+
+One problem in dealing with data analysis tasks consists in missing data. Pandas makes it as easy as possible to work with missing data.
+
+If we look once more at our previous example, we can see that the index of our series is the same as the keys of the dictionary we used to create the cities_series. Now, we want to use an index which is not overlapping with the dictionary keys. We have already seen that we can pass a list or a tuple to the keyword argument 'index' to define the index. In our next example, the list (or tuple) passed to the keyword parameter 'index' will not be equal to the keys. This means that some cities from the dictionary will be missing and two cities ("Zurich" and "Stuttgart") don't occur in the dictionary.
+
+my_cities = ["London", "Paris", "Zurich", "Berlin", 
+             "Stuttgart", "Hamburg"]
+
+my_city_series = pd.Series(cities, 
+                           index=my_cities)
+my_city_series
+OUTPUT:
+London       8615246.0
+Paris        2273305.0
+Zurich             NaN
+Berlin       3562166.0
+Stuttgart          NaN
+Hamburg      1760433.0
+dtype: float64
+Due to the Nan values the population values for the other cities are turned into floats. There is no missing data in the following examples, so the values are int:
+
+my_cities = ["London", "Paris", "Berlin", "Hamburg"]
+
+my_city_series = pd.Series(cities, 
+                           index=my_cities)
+my_city_series
+OUTPUT:
+London     8615246
+Paris      2273305
+Berlin     3562166
+Hamburg    1760433
+dtype: int64
+
+The Methods isnull() and notnull()
+We can see, that the cities, which are not included in the dictionary, get the value NaN assigned. NaN stands for "not a number". It can also be seen as meaning "missing" in our example.
+
+We can check for missing values with the methods isnull and notnull:
+
+my_cities = ["London", "Paris", "Zurich", "Berlin", 
+             "Stuttgart", "Hamburg"]
+
+my_city_series = pd.Series(cities, 
+                           index=my_cities)
+print(my_city_series.isnull())
+OUTPUT:
+London       False
+Paris        False
+Zurich        True
+Berlin       False
+Stuttgart     True
+Hamburg      False
+dtype: bool
+print(my_city_series.notnull())
+OUTPUT:
+London        True
+Paris         True
+Zurich       False
+Berlin        True
+Stuttgart    False
+Hamburg       True
+dtype: bool
+
+Connection between NaN and None
+We get also a NaN, if a value in the dictionary has a None:
+
+d = {"a":23, "b":45, "c":None, "d":0}
+S = pd.Series(d)
+print(S)
+OUTPUT:
+a    23.0
+b    45.0
+c     NaN
+d     0.0
+dtype: float64
+pd.isnull(S)
+OUTPUT:
+a    False
+b    False
+c     True
+d    False
+dtype: bool
+pd.notnull(S)
+OUTPUT:
+a     True
+b     True
+c    False
+d     True
+dtype: bool
+
+Filtering out Missing Data
+It's possible to filter out missing data with the Series method dropna. It returns a Series which consists only of non-null data:
+
+print(my_city_series.dropna())
+OUTPUT:
+London     8615246.0
+Paris      2273305.0
+Berlin     3562166.0
+Hamburg    1760433.0
+dtype: float64
+
+Filling in Missing Data
+In many cases you don't want to filter out missing data, but you want to fill in appropriate data for the empty gaps. A suitable method in many situations will be fillna:
+
+print(my_city_series.fillna(0))
+OUTPUT:
+London       8615246.0
+Paris        2273305.0
+Zurich             0.0
+Berlin       3562166.0
+Stuttgart          0.0
+Hamburg      1760433.0
+dtype: float64
+Okay, that's not what we call "fill in appropriate data for the empty gaps". If we call fillna with a dict, we can provide the appropriate data, i.e. the population of Zurich and Stuttgart:
+
+missing_cities = {"Stuttgart":597939, "Zurich":378884}
+my_city_series.fillna(missing_cities)
+OUTPUT:
+London       8615246.0
+Paris        2273305.0
+Zurich        378884.0
+Berlin       3562166.0
+Stuttgart     597939.0
+Hamburg      1760433.0
+dtype: float64
+We still have the problem that integer values - which means values which should be integers like number of people - are converted to float as soon as we have NaN values. We can solve this problem now with the method 'fillna':
+
+cities = {"London":   8615246, 
+          "Berlin":   3562166, 
+          "Madrid":   3165235, 
+          "Rome":     2874038, 
+          "Paris":    2273305, 
+          "Vienna":   1805681, 
+          "Bucharest":1803425, 
+          "Hamburg":  1760433,
+          "Budapest": 1754000,
+          "Warsaw":   1740119,
+          "Barcelona":1602386,
+          "Munich":   1493900,
+          "Milan":    1350680}
+
+my_cities = ["London", "Paris", "Zurich", "Berlin", 
+             "Stuttgart", "Hamburg"]
+
+my_city_series = pd.Series(cities, 
+                           index=my_cities)
+my_city_series = my_city_series.fillna(0).astype(int)
+print(my_city_series)
+OUTPUT:
+London       8615246
+Paris        2273305
+Zurich             0
+Berlin       3562166
+Stuttgart          0
+Hamburg      1760433
+dtype: int64
